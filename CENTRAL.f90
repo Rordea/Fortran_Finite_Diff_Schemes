@@ -1,8 +1,13 @@
-PROGRAM LINEAR1
+PROGRAM central1
 
 IMPLICIT NONE
 
 !!!!DECLARATION OF VARIABLES!!!!
+REAL::flui
+REAL::flui_1
+REAL::flui_1_mns_1
+REAL::flui_05
+REAL::flui_mns05
 REAL::LB     !left boundary LOCATION
 REAL::RB     !RIGHT BOUNDARY LOCATION
 REAL::LENGTH !DOMAIN LENGTH
@@ -69,9 +74,19 @@ do 	!start time loop
 		dt=min(dt,t_end-t_c)
 	print*,t_c,dt
 
-	!upwind scheme
+	!central scheme
 	do i=1,points-2
-		fi(i,2)=fi(i,1)-((U*dt/dx)*(fi(i,1)-fi(i-1,1)))
+        
+        flui = u*fi(i,1)
+        flui_1 = u*fi(i+1,1)
+        flui_1_mns_1 = u*fi(i-1,1)
+
+        flui_05 = ((flui + flui_1)/2) + (0.5*(dx/dt)*(flui-flui_1)) ! flux i+1/2
+        flui_mns05 =((flui_1_mns_1 + flui)/2) + (0.5*(dx/dt)*(flui_1_mns_1 - flui))  !flux i-1/2
+		
+        
+        fi(i,2)=fi(i,1)-((dt/dx)*(flui_05-flui_mns05))
+
 	end do
 
 
@@ -91,7 +106,7 @@ do 	!start time loop
 end do
 
 !write final solution
-open(31,file="final.dat", form="formatted",status="replace")
+open(31,file="final_central.dat", form="formatted",status="replace")
 DO I=0,POINTS-1
 WRITE(31,*)X(I), FI(I,1)
 END DO
@@ -103,4 +118,4 @@ END DO
 
 
 
-END PROGRAM LINEAR1
+END PROGRAM central1
